@@ -41,9 +41,9 @@ namespace AireSpringWeb.Controllers
         /// Returns the full list of employees
         /// </summary>
         /// <returns>List of <see cref="Employee"/></returns>
-        public async Task<ActionResult> IndexAsync()
+        public async Task<ActionResult> IndexAsync(string lastOrFirstName)
         {
-            var employeeList = await _employeeService.GetAllEmployeesAsync();
+            var employeeList = await _employeeService.GetAllEmployeesAsync(lastOrFirstName);
             var employeeViewModelList = _mapper.Map<List<EmployeeViewModel>>(employeeList);
             return View("Index", employeeViewModelList);
         }
@@ -84,21 +84,34 @@ namespace AireSpringWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> CreateAsync(IFormCollection collection)
         {
-            var employee = new Employee
+            try
             {
-                EmployeeFirstName = collection["EmployeeFirstName"],
-                EmployeeLastName = collection["EmployeeLastName"],
-                EmployeePhone = collection["EmployeePhone"],
-                EmployeeZip = collection["Employeezip"],
-                HireDate = Convert.ToDateTime(collection["HireDate"]),
-            };
+                var employee = new Employee
+                {
+                    EmployeeFirstName = collection["EmployeeFirstName"],
+                    EmployeeLastName = collection["EmployeeLastName"],
+                    EmployeePhone = collection["EmployeePhone"],
+                    EmployeeZip = collection["Employeezip"],
+                    HireDate = Convert.ToDateTime(collection["HireDate"]),
+                };
 
-            await _employeeService.CreateEmployeeAsync(employee);
+                await _employeeService.CreateEmployeeAsync(employee);
+            }
+            catch
+            {
+                return View("~/Views/Shared/Error.cshtml", new ErrorViewModel { ErrorMsg = "We don't to save the new employee" } );
+            }
 
             return RedirectToAction("Index");
         }
 
         // GET: EmployeeController/Edit/5
+
+        /// <summary>
+        /// Shows a form to edit an employee data
+        /// </summary>
+        /// <param name="id">Employee id</param>
+        /// <returns>Form to edit employee</returns>
         public async Task<ActionResult> EditAsync(int id)
         {
             var employee = await _employeeService.GetEmployeeByIdAsync(id);
@@ -107,26 +120,46 @@ namespace AireSpringWeb.Controllers
         }
 
         // POST: EmployeeController/Edit/5
+
+        /// <summary>
+        /// Edits an employee data by id
+        /// </summary>
+        /// <param name="id">Employee id</param>
+        /// <param name="collection">Form with the employee data</param>
+        /// <returns></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> EditAsync(int id, IFormCollection collection)
         {
-            var employee = new Employee
+            try
             {
-                EmployeeID = id,
-                EmployeeFirstName = collection["EmployeeFirstName"],
-                EmployeeLastName = collection["EmployeeLastName"],
-                EmployeePhone = collection["EmployeePhone"],
-                EmployeeZip = collection["Employeezip"],
-                HireDate = Convert.ToDateTime(collection["HireDate"]),
-            };
+                var employee = new Employee
+                {
+                    EmployeeID = id,
+                    EmployeeFirstName = collection["EmployeeFirstName"],
+                    EmployeeLastName = collection["EmployeeLastName"],
+                    EmployeePhone = collection["EmployeePhone"],
+                    EmployeeZip = collection["Employeezip"],
+                    HireDate = Convert.ToDateTime(collection["HireDate"]),
+                };
 
-            await _employeeService.UpdateEmployeeAsync(employee);
+                await _employeeService.UpdateEmployeeAsync(employee);
+            }
+            catch
+            {
+                return View("~/Views/Shared/Error.cshtml", new ErrorViewModel { ErrorMsg = "We don't to update the specified employee" });
+            }
 
             return RedirectToAction("Details", new { id });
         }
 
         // GET: EmployeeController/Delete/5
+
+        /// <summary>
+        /// Shows a view to delete an employee record
+        /// </summary>
+        /// <param name="id">Employee id</param>
+        /// <returns>View to delete an employee</returns>
         public async Task<ActionResult> DeleteAsync(int id)
         {
             var employee = await _employeeService.GetEmployeeByIdAsync(id);
@@ -134,6 +167,12 @@ namespace AireSpringWeb.Controllers
         }
 
         // POST: EmployeeController/Delete/5
+
+        /// <summary>
+        /// Deletes the specified employee
+        /// </summary>
+        /// <param name="id">Employee id</param>
+        /// <returns></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteAsync(int id, IFormCollection collection)
@@ -146,7 +185,7 @@ namespace AireSpringWeb.Controllers
             }
             catch
             {
-                return View();
+                return View("~/Views/Shared/Error.cshtml", new ErrorViewModel { ErrorMsg = "We don't to update the specified employee" });
             }
         }
     }

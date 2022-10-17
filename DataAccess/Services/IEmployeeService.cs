@@ -19,10 +19,11 @@ namespace DataAccess.Services
         Task DeleteEmployeeAsync(int id);
 
         /// <summary>
-        /// Gets the full list of employees
+        /// Gets the full list of employees or filtered by last or first name
         /// </summary>
+        /// <param name="lastOrFirstName">Last or First name of employee</param>
         /// <returns>List of <see cref="Employee"/></returns>
-        Task<IEnumerable<Employee>> GetAllEmployeesAsync();
+        Task<IEnumerable<Employee>> GetAllEmployeesAsync(string lastOrFirstName);
 
         /// <summary>
         /// Gets the specified employee by id

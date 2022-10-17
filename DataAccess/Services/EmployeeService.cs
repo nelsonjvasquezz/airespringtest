@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using System.Data;
 using System.Data.SqlClient;
+using System.Text;
 
 namespace DataAccess.Services
 {
@@ -25,9 +26,15 @@ namespace DataAccess.Services
         }
 
         /// <inheritdoc />
-        public virtual async Task<IEnumerable<Employee>> GetAllEmployeesAsync()
+        public virtual async Task<IEnumerable<Employee>> GetAllEmployeesAsync(string lastOrFirstName)
         {
             var employeeList = new List<Employee>();
+            var query = new StringBuilder("SELECT * FROM dbo.emp_employees ");
+
+            if (!string.IsNullOrEmpty(lastOrFirstName))
+            {
+                query.Append("WHERE emp_employee_first_name LIKE @last_or_first_name OR emp_employee_last_name LIKE @last_or_first_name");
+            }
 
             using (var connection = new SqlConnection(_dbConnection.ConnectionString))
             {
@@ -36,8 +43,13 @@ namespace DataAccess.Services
                 {
                     Connection = connection,
                     CommandType = CommandType.Text,
-                    CommandText = "SELECT * FROM dbo.emp_employees"
+                    CommandText = query.ToString(),
                 };
+
+                if (!string.IsNullOrEmpty(lastOrFirstName))
+                {
+                    cmd.Parameters.AddWithValue("@last_or_first_name", $"%{lastOrFirstName}%");
+                }
 
                 using (var result = await cmd.ExecuteReaderAsync())
                 {
